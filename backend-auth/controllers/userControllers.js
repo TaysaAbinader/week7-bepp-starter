@@ -1,6 +1,7 @@
 const User = require("../models/userModel");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
+const validator = require("validator");
 
 // Generate JWT
 const generateToken = (_id) => {
@@ -41,6 +42,16 @@ const signupUser = async (req, res) => {
     if (userExists) {
       res.status(400);
       throw new Error("User already exists");
+    }
+
+    if (!validator.isEmail(email)) {
+      res.status(400);
+      throw new Error("Email not valid");
+    }
+
+    if (!validator.isStrongPassword(password)) {
+      res.status(400);
+      throw new Error("Password not strong");
     }
 
     // Hash password
@@ -84,7 +95,7 @@ const loginUser = async (req, res) => {
       const token = generateToken(user._id);
       res.status(200).json({ email, token });
     } else {
-      res.status(400);
+      res.status(401);
       throw new Error("Invalid credentials");
     }
   } catch (error) {
@@ -99,7 +110,7 @@ const getMe = async (req, res) => {
   try {
     res.status(200).json(req.user);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(401).json({ error: error.message });
   }
 };
 

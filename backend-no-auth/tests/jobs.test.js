@@ -56,3 +56,80 @@ describe("when a GET request is made to /api/jobs/:id", () => {
   });
 });
 
+// ---------------- POST ----------------
+describe("when a POST request is made to /api/jobs", () => {
+  it("should create a new tour", async () => {
+    const newJob = {
+      title: "Full-Stack Developer",
+      type: "Part-Time",
+      description: "React, Node",
+      company: {name: "Bye", contactEmail: "bye@world.com", contactPhone: "12345"},
+    };
+
+    const response = await api
+      .post("/api/jobs")
+      .send(newJob)
+      .expect(201)
+      .expect("Content-Type", /application\/json/);
+
+    expect(response.body.title).toBe(newJob.title);
+
+    const jobsAfterPost = await Job.find({});
+    expect(jobsAfterPost).toHaveLength(jobs.length + 1);
+  });
+});
+
+// ---------------- PUT ----------------
+describe("when a PUT request is made to /api/jobs/:id", () => {
+  it("should update a job with partial data", async () => {
+    const job = await Job.findOne();
+    const updatedJob = {type: "Internship" };
+
+    const response = await api
+      .put(`/api/jobs/${job._id}`)
+      .send(updatedJob)
+      .expect(200)
+      .expect("Content-Type", /application\/json/);
+
+    expect(response.body.type).toBe(updatedJob.type);
+
+    const updatedJobCheck = await Job.findById(job._id);
+    expect(updatedJobCheck.type).toBe(updatedJob.type);
+  });
+
+  it("should return 400 for invalid job ID", async () => {
+    const invalidId = "000111"; // invalid format, not a valid ObjectId
+    await api.put(`/api/jobs/${invalidId}`).send({}).expect(400);
+  });
+
+  it("should return 404 if job is not found with valid ID", async () => {
+    const validId = "507f1f77bcf86cd799439011";
+    await api.put(`/api/jobs/${validId}`).send({}).expect(404);
+  });
+});
+
+// ---------------- DELETE ----------------
+describe("when a DELETE request is made to /api/jobs/:id", () => {
+  it("should delete a job by ID", async () => {
+    const job = await Job.findOne();
+    await api.delete(`/api/jobs/${job._id}`).expect(204);
+
+    const deletedJobCheck = await Job.findById(job._id);
+    expect(deletedJobCheck).toBeNull();
+  });
+
+  it("should return 400 for invalid job ID", async () => {
+    const invalidId = "12345"; // invalid format
+    await api.delete(`/api/jobs/${invalidId}`).expect(400);
+  });
+
+  it("should return 404 if job is not found with valid ID", async () => {
+    const validId = "607f1f77bcf86cd799439011";
+    await api.delete(`/api/jobs/${validId}`).send({}).expect(404);
+  })
+});
+
+// Close DB connection once after all tests in this file
+afterAll(async () => {
+  await mongoose.connection.close();
+});

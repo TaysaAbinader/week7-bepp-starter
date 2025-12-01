@@ -34,7 +34,7 @@ const createJob = async (req, res) => {
 const getJobById = async (req, res) => {
   const { jobId } = req.params;
   if (!mongoose.Types.ObjectId.isValid(jobId)) {
-    return res.status(404).json({ error: "No such job" });
+    return res.status(400).json({ error: "No such job" });
   }
 
   try {
@@ -54,7 +54,7 @@ const getJobById = async (req, res) => {
 const updateJob = async (req, res) => {
   const { jobId } = req.params;
   if (!mongoose.Types.ObjectId.isValid(jobId)) {
-    return res.status(404).json({ error: "No such job" });
+    return res.status(400).json({ error: "No such job" });
   }
 
   try {
@@ -78,7 +78,7 @@ const updateJob = async (req, res) => {
 const deleteJob = async (req, res) => {
   const { jobId } = req.params;
   if (!mongoose.Types.ObjectId.isValid(jobId)) {
-    return res.status(404).json({ error: "No such job" });
+    return res.status(400).json({ error: "No such job" });
   }
 
   try {
